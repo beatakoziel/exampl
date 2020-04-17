@@ -1,11 +1,30 @@
 package com.example.demo;
 
-import lombok.Getter;
-import lombok.Setter;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Getter
-@Setter
+import javax.persistence.*;
+import javax.validation.constraints.NotBlank;
+
+@Data
+@Entity
+@Builder
+@AllArgsConstructor
+@NoArgsConstructor
 public class User {
-    private String login;
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long personId;
+
+    @Column(nullable = false)
+    private String username;
+
+    @NotBlank
     private String password;
+
+    private String role;
+
 }
