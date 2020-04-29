@@ -1,33 +1,48 @@
 package com.example.demo;
 
-import io.jsonwebtoken.Jwts;
-import io.jsonwebtoken.SignatureAlgorithm;
-import io.jsonwebtoken.security.Keys;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RestController;
-
-import java.security.Key;
-import java.util.Date;
+import lombok.AllArgsConstructor;
+import lombok.RequiredArgsConstructor;
+import org.springframework.http.ResponseEntity;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
+@AllArgsConstructor
 public class UserController {
 
-    public static final int ONE_MINUTE = 60000;
+    private AuthenticationManager authenticationManager;
+    private MyUserDetailsService userDetailService;
+    private JwtUtil jwtTokenUtil;
 
-    private Key getSigningKey() {
-        byte[] keyBytes = ("fkwda<NJ7&M~rQJRr#6%6F{6;KWz?~").getBytes();
-        return Keys.hmacShaKeyFor(keyBytes);
+/*    @GetMapping("/hello1")
+    public String hello1() {
+        return "hello1";
+    }*/
+
+    //@GetMapping("/hello2")
+    @RequestMapping(value = "/hello", method = RequestMethod.GET)
+    public String hello2() {
+        return "hello2";
     }
 
-    @PostMapping(value = "/login", consumes = "application/json")
-    public String login(@RequestBody User user) {
-        return Jwts.builder()
-                .setSubject(user.getLogin())
-                .claim("role", "USER")
-                .setIssuedAt(new Date(System.currentTimeMillis()))
-                .setExpiration(new Date(System.currentTimeMillis() + 2 * ONE_MINUTE))
-                .signWith(SignatureAlgorithm.HS256, "fkwda<NJ7&M~rQJRr#6%6F{6;KWz?~")
-                .compact();
+    //@PostMapping(value = "/login", consumes = "application/json")
+    @RequestMapping(value = "/authenticate", method = RequestMethod.POST)
+    public ResponseEntity<AuthResponse> login(@RequestBody AuthRequest user) throws Exception {
+        try {
+            authenticationManager.authenticate(
+                    new UsernamePasswordAuthenticationToken(user.getUsername(), user.getPassword())
+            );
+        } catch (BadCredentialsException e) {
+            throw new Exception("Incorrect username or password", e);
+        }
+        final UserDetails userDetails = userDetailService.loadUserByUsername(user.getUsername());
+        final String jwt = jwtTokenUtil.generateToken(userDetails);
+        return ResponseEntity.ok(new AuthResponse(jwt));
     }
+
+
 }

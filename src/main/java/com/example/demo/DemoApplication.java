@@ -13,11 +13,4 @@ public class DemoApplication {
         SpringApplication.run(DemoApplication.class, args);
     }
 
-    public FilterRegistrationBean filterRegistrationBean() {
-        FilterRegistrationBean filterRegistrationBean = new FilterRegistrationBean();
-        filterRegistrationBean.setFilter(new JwtAuthenticationFilter());
-        filterRegistrationBean.setUrlPatterns(Collections.singleton("/test2/*"));
-        return filterRegistrationBean;
-    }
-
 }
